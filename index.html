@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hospital Vila da Serra — Sistema de Senhas</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;900&family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --teal: #00a99d;
+  --teal-dark: #007f75;
+  --teal-light: #e6f7f6;
+  --gray: #9b9b9b;
+  --gray-light: #f5f5f5;
+  --gray-mid: #e0e0e0;
+  --gray-dark: #555;
+  --white: #ffffff;
+  --text: #2a2a2a;
+  --border: #dce9e8;
+  --success: #28a745;
+  --warning: #e8a000;
+  --danger: #dc3545;
+  --g1: #00a99d;
+  --g2: #e8a000;
+  --g3: #6f42c1;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: var(--gray-light);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  background: var(--white);
+  border-bottom: 4px solid var(--teal);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  box-shadow: 0 2px 16px rgba(0,169,157,.1);
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-tabs { display: flex; gap: 6px; }
+.tab-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--gray-dark);
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all .2s;
+}
+.tab-btn.active { background: var(--teal); color: white; border-color: var(--teal); }
+.tab-btn:hover:not(.active) { border-color: var(--teal); color: var(--teal); }
+
+/* PAGES */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ================================================================
+   LOGO SVG
+================================================================ */
+.logo-inline { height: 48px; display: block; }
+
+/* ================================================================
+   CLIENTE PAGE
+================================================================ */
+.cliente-wrap {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 36px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+.hosp-header { text-align: center; }
+.hosp-header h2 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin-top: 14px;
+}
+.hosp-header p { font-size: 14px; color: var(--gray); margin-top: 6px; }
+
+/* Painel chamando agora */
+.painel-chamando {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.guiche-card-pub {
+  border-radius: 14px;
+  padding: 16px 10px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+}
+.guiche-card-pub.g1 { background: var(--g1); }
+.guiche-card-pub.g2 { background: var(--g2); }
+.guiche-card-pub.g3 { background: var(--g3); }
+.gcp-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: .85; }
+.gcp-guiche { font-size: 12px; font-weight: 700; opacity: .9; margin-top: 2px; }
+.gcp-num {
+  font-family: 'Oswald', sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  line-height: 1;
+  margin: 6px 0;
+}
+.gcp-status { font-size: 10px; opacity: .8; }
+
+/* QR */
+.qr-container {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 24px rgba(0,169,157,.12);
+  border: 2px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.qr-container .qt { font-size: 12px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 2px; text-align: center; }
+
+/* Botão pegar senha */
+.btn-pegar {
+  width: 100%;
+  padding: 20px;
+  background: var(--teal);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: all .2s;
+  box-shadow: 0 6px 24px rgba(0,169,157,.35);
+}
+.btn-pegar:hover { background: var(--teal-dark); transform: translateY(-2px); }
+.btn-pegar:disabled { background: var(--gray); cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Minha senha */
+.minha-senha-card {
+  display: none;
+  width: 100%;
+  background: white;
+  border: 3px solid var(--teal);
+  border-radius: 20px;
+  padding: 28px;
+  text-align: center;
+  animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 8px 32px rgba(0,169,157,.2);
+}
+.minha-senha-card.show { display: block; }
+@keyframes popIn { from{transform:scale(.8);opacity:0} to{transform:scale(1);opacity:1} }
+.ms-label { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 3px; font-weight: 700; }
+.ms-num {
+  font-family: 'Oswald', sans-serif;
+  font-size: 90px;
+  color: var(--teal);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 6px;
+  margin: 8px 0;
+}
+.ms-hora { font-size: 12px; color: var(--gray); margin-bottom: 14px; }
+.posicao-tag {
+  display: inline-block;
+  background: var(--teal-light);
+  color: var(--teal-dark);
+  border: 1.5px solid var(--teal);
+  border-radius: 20px;
+  padding: 8px 24px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.posicao-tag.alert {
+  background: #fff3cd; color: #856404; border-color: var(--warning);
+  animation: blinkTag 1s infinite;
+}
+@keyframes blinkTag { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+/* ================================================================
+   PORTARIA PAGE
+================================================================ */
+.portaria-wrap {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  min-height: calc(100vh - 76px);
+}
+.portaria-main { padding: 28px; background: white; border-right: 2px solid var(--border); }
+.portaria-side { padding: 22px; background: var(--gray-light); overflow-y: auto; }
+
+.section-head {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  color: var(--teal);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--teal-light);
+}
+
+/* Guichês grid */
+.guiches-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.guiche-painel {
+  border-radius: 18px;
+  padding: 22px 16px;
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0,0,0,.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.guiche-painel::before {
+  content: '';
+  position: absolute;
+  bottom: -30px; right: -30px;
+  width: 120px; height: 120px;
+  background: rgba(255,255,255,.08);
+  border-radius: 50%;
+}
+.guiche-painel.g1 { background: linear-gradient(135deg, var(--g1), var(--teal-dark)); }
+.guiche-painel.g2 { background: linear-gradient(135deg, #f0b429, #c77800); }
+.guiche-painel.g3 { background: linear-gradient(135deg, #7c52d6, #4a2d9e); }
+.gp-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; opacity: .85; }
+.gp-num {
+  font-family: 'Oswald', sans-serif;
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+.gp-num.anim { animation: callBounce .4s ease; }
+@keyframes callBounce { 0%{transform:scale(1.25)} 100%{transform:scale(1)} }
+.gp-status { font-size: 11px; opacity: .85; font-weight: 600; }
+.gp-actions { display: flex; flex-direction: column; gap: 7px; width: 100%; position: relative; z-index: 1; }
+.btn-g {
+  padding: 10px 8px;
+  background: rgba(255,255,255,.2);
+  color: white;
+  border: 1.5px solid rgba(255,255,255,.4);
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .3px;
+}
+.btn-g.primary {
+  background: white;
+  color: var(--text);
+  border-color: white;
+  font-size: 13px;
+}
+.btn-g.primary.g1c { color: var(--teal-dark); }
+.btn-g.primary.g2c { color: #c77800; }
+.btn-g.primary.g3c { color: #4a2d9e; }
+.btn-g:hover { background: rgba(255,255,255,.35); }
+.btn-g.primary:hover { background: rgba(255,255,255,.9); }
+.btn-g:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Fila geral */
+.fila-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.ftab {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: white;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  color: var(--gray-dark);
+}
+.ftab.active { background: var(--teal); color: white; border-color: var(--teal); }
+.fila-scroll { max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.fila-item {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--gray-light);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 16px;
+  animation: slideIn .25s ease;
+  transition: all .2s;
+}
+@keyframes slideIn { from{transform:translateX(-12px);opacity:0} to{transform:translateX(0);opacity:1} }
+.fila-item.chamado { background: var(--teal-light); border-color: var(--teal); }
+.fila-item.atendido { opacity: .45; }
+.fi-num {
+  font-family: 'Oswald', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--teal);
+  min-width: 56px;
+  letter-spacing: 2px;
+}
+.fi-info { flex: 1; }
+.fi-hora { font-size: 11px; color: var(--gray); }
+.fi-guiche { font-size: 11px; font-weight: 700; }
+.fi-guiche.g1c { color: var(--g1); }
+.fi-guiche.g2c { color: var(--g2); }
+.fi-guiche.g3c { color: var(--g3); }
+.fi-badge {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .8px; padding: 4px 10px; border-radius: 20px;
+}
+.badge-ag { background: #fff3cd; color: #856404; }
+.badge-ch { background: var(--teal-light); color: var(--teal-dark); }
+.badge-at { background: #d4edda; color: #155724; }
+
+/* Stats sidebar */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.stat-card {
+  background: white; border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 14px; text-align: center;
+}
+.stat-n { font-family: 'Oswald', sans-serif; font-size: 34px; font-weight: 700; color: var(--teal); line-height: 1; }
+.stat-l { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+.stat-card.sw .stat-n { color: var(--warning); }
+.stat-card.sg .stat-n { color: var(--success); }
+.stat-card.sd .stat-n { color: var(--gray-dark); }
+
+.btn-danger {
+  width: 100%; padding: 11px;
+  background: white; color: var(--danger);
+  border: 2px solid var(--danger); border-radius: 10px;
+  font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all .2s; margin-bottom: 16px;
+}
+.btn-danger:hover { background: var(--danger); color: white; }
+
+.qr-side { background: white; border: 1.5px solid var(--border); border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 16px; }
+.qr-side h4 { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 14px; }
+.url-box { margin-top: 10px; background: var(--gray-light); border-radius: 8px; padding: 8px; font-size: 10px; color: var(--teal); word-break: break-all; font-weight: 700; }
+
+.btn-tv {
+  width: 100%; padding: 12px;
+  background: var(--teal); color: white; border: none; border-radius: 10px;
+  font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all .2s; margin-bottom: 10px;
+}
+.btn-tv:hover { background: var(--teal-dark); }
+
+/* ================================================================
+   PAINEL TV — FULLSCREEN
+================================================================ */
+#page-tv {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: #f0fbfa;
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+}
+#page-tv.active { display: flex; }
+
+.tv-header {
+  background: white;
+  border-bottom: 4px solid var(--teal);
+  padding: 0 48px;
+  height: 88px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 2px 20px rgba(0,169,157,.1);
+  flex-shrink: 0;
+}
+.tv-relogio {
+  font-family: 'Oswald', sans-serif;
+  font-size: 34px; color: var(--gray); font-weight: 400; letter-spacing: 3px;
+}
+.tv-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr auto;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* Guichê TV */
+.tv-guiche {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 24px;
+  border-right: 2px solid rgba(255,255,255,.15);
+  position: relative;
+  overflow: hidden;
+  transition: all .3s;
+}
+.tv-guiche:last-child { border-right: none; }
+.tv-guiche.g1 { background: linear-gradient(160deg, #00a99d 0%, #007f75 100%); color: white; }
+.tv-guiche.g2 { background: linear-gradient(160deg, #f0b429 0%, #c77800 100%); color: white; }
+.tv-guiche.g3 { background: linear-gradient(160deg, #7c52d6 0%, #4a2d9e 100%); color: white; }
+.tv-guiche::before {
+  content: ''; position: absolute;
+  bottom: -60px; right: -60px;
+  width: 300px; height: 300px;
+  background: rgba(255,255,255,.07);
+  border-radius: 50%;
+}
+.tv-guiche::after {
+  content: ''; position: absolute;
+  top: -40px; left: -40px;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,.05);
+  border-radius: 50%;
+}
+.tvg-label {
+  font-size: 14px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 5px;
+  opacity: .85; margin-bottom: 8px;
+  position: relative; z-index: 1;
+}
+.tvg-guiche-name {
+  font-size: 20px; font-weight: 900;
+  letter-spacing: 3px; opacity: .9;
+  margin-bottom: 16px;
+  position: relative; z-index: 1;
+}
+.tvg-num {
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(80px, 10vw, 160px);
+  font-weight: 700;
+  letter-spacing: 6px;
+  line-height: 1;
+  text-shadow: 0 6px 24px rgba(0,0,0,.2);
+  position: relative; z-index: 1;
+  transition: transform .3s;
+}
+.tvg-num.novo { animation: tvNumEntrada .5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes tvNumEntrada { from{transform:scale(1.35);opacity:.4} to{transform:scale(1);opacity:1} }
+.tvg-status {
+  font-size: 16px; font-weight: 600;
+  opacity: .85; margin-top: 16px;
+  position: relative; z-index: 1;
+  text-align: center;
+}
+
+/* Bottom bar TV */
+.tv-bottom {
+  grid-column: 1 / -1;
+  background: white;
+  border-top: 3px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 48px;
+  gap: 48px;
+  height: 90px;
+  flex-shrink: 0;
+}
+.tv-stat-item { text-align: center; }
+.tv-stat-n { font-family: 'Oswald', sans-serif; font-size: 40px; font-weight: 700; color: var(--teal); line-height: 1; }
+.tv-stat-l { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+.tv-stat-div { width: 1px; height: 50px; background: var(--border); }
+
+.tv-ticker-wrap { flex: 1; overflow: hidden; }
+.tv-ticker {
+  font-size: 15px; font-weight: 600; color: var(--gray-dark);
+  white-space: nowrap;
+  display: inline-block;
+  animation: ticker 25s linear infinite;
+}
+@keyframes ticker { from{transform:translateX(100vw)} to{transform:translateX(-100%)} }
+
+/* TV footer */
+.tv-footer {
+  background: var(--teal-dark);
+  color: white; text-align: center;
+  padding: 10px; font-size: 13px;
+  font-weight: 700; letter-spacing: 2px;
+  flex-shrink: 0;
+}
+
+/* Flash overlay ao chamar */
+.flash-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,.6);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 999;
+  transition: opacity .1s;
+}
+.flash-overlay.flash { animation: flashAnim .5s ease; }
+@keyframes flashAnim { 0%{opacity:.7} 100%{opacity:0} }
+
+.tv-close-btn {
+  position: fixed; top: 18px; right: 18px;
+  background: rgba(0,0,0,.5); color: white; border: none;
+  border-radius: 8px; padding: 8px 16px; font-size: 12px;
+  cursor: pointer; z-index: 300;
+  font-family: 'Montserrat', sans-serif; font-weight: 700;
+  transition: .2s;
+}
+.tv-close-btn:hover { background: rgba(0,0,0,.85); }
+
+/* EMPTY / MISC */
+.empty { text-align: center; padding: 40px 20px; color: var(--gray); font-size: 14px; }
+
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--teal); color: white;
+  padding: 13px 28px; border-radius: 12px;
+  font-size: 14px; font-weight: 600;
+  z-index: 999; transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap; box-shadow: 0 4px 24px rgba(0,169,157,.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+@media(max-width:900px) {
+  .portaria-wrap { grid-template-columns: 1fr; }
+  .guiches-grid { grid-template-columns: 1fr; }
+  .painel-chamando { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <svg class="logo-inline" viewBox="0 0 300 56" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="22" cy="30" r="18" fill="none" stroke="#00a99d" stroke-width="7"/>
+    <circle cx="38" cy="30" r="18" fill="none" stroke="#9b9b9b" stroke-width="7"/>
+    <text x="66" y="18" font-family="Montserrat,sans-serif" font-size="10" font-weight="600" fill="#9b9b9b" letter-spacing="3">HOSPITAL</text>
+    <text x="64" y="46" font-family="Montserrat,sans-serif" font-size="24" font-weight="900" fill="#00a99d" letter-spacing="1">VILA DA SERRA</text>
+  </svg>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="setPage('cliente',this)">📱 Cliente</button>
+    <button class="tab-btn" onclick="setPage('portaria',this)">🎛️ Portaria</button>
+    <button class="tab-btn" onclick="abrirTV()">📺 Painel TV</button>
+  </div>
+</nav>
+
+<!-- ================================================================
+     CLIENTE
+================================================================ -->
+<div id="page-cliente" class="page active">
+  <div class="cliente-wrap">
+    <div class="hosp-header">
+      <svg style="height:44px;display:block;margin:0 auto" viewBox="0 0 300 56" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="22" cy="30" r="18" fill="none" stroke="#00a99d" stroke-width="7"/>
+        <circle cx="38" cy="30" r="18" fill="none" stroke="#9b9b9b" stroke-width="7"/>
+        <text x="66" y="18" font-family="Montserrat,sans-serif" font-size="10" font-weight="600" fill="#9b9b9b" letter-spacing="3">HOSPITAL</text>
+        <text x="64" y="46" font-family="Montserrat,sans-serif" font-size="24" font-weight="900" fill="#00a99d" letter-spacing="1">VILA DA SERRA</text>
+      </svg>
+      <h2>Sistema de Senhas</h2>
+      <p>Retire sua senha e aguarde ser chamado</p>
+    </div>
+
+    <!-- Guichês chamando agora -->
+    <div style="width:100%">
+      <p style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:3px;text-align:center;margin-bottom:10px">Chamando agora</p>
+      <div class="painel-chamando">
+        <div class="guiche-card-pub g1">
+          <div class="gcp-label">Chamando</div>
+          <div class="gcp-guiche">Guichê 01</div>
+          <div class="gcp-num" id="pub-g1">—</div>
+          <div class="gcp-status">Atendimento Geral</div>
+        </div>
+        <div class="guiche-card-pub g2">
+          <div class="gcp-label">Chamando</div>
+          <div class="gcp-guiche">Guichê 02</div>
+          <div class="gcp-num" id="pub-g2">—</div>
+          <div class="gcp-status">Atendimento Geral</div>
+        </div>
+        <div class="guiche-card-pub g3">
+          <div class="gcp-label">Chamando</div>
+          <div class="gcp-guiche">Guichê 03</div>
+          <div class="gcp-num" id="pub-g3">—</div>
+          <div class="gcp-status">Atendimento Geral</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Code -->
+    <div class="qr-container">
+      <div class="qt">Escaneie para retirar sua senha</div>
+      <div id="qrcode-cliente"></div>
+      <div style="font-size:12px;color:var(--gray)">Ou clique no botão abaixo</div>
+    </div>
+
+    <button class="btn-pegar" id="btn-pegar" onclick="gerarSenha()">🎫 RETIRAR SENHA</button>
+
+    <div class="minha-senha-card" id="minha-senha-card">
+      <div class="ms-label">Sua senha</div>
+      <div class="ms-num" id="ms-num">000</div>
+      <div class="ms-hora" id="ms-hora"></div>
+      <div class="posicao-tag" id="ms-posicao">Verificando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     PORTARIA
+================================================================ -->
+<div id="page-portaria" class="page">
+  <div class="portaria-wrap">
+    <div class="portaria-main">
+      <div class="section-head">Painel da Portaria — 3 Guichês</div>
+
+      <!-- 3 Guichês -->
+      <div class="guiches-grid">
+
+        <!-- Guichê 1 -->
+        <div class="guiche-painel g1">
+          <div class="gp-title">Chamando</div>
+          <div style="font-size:13px;font-weight:900;letter-spacing:3px;opacity:.9">GUICHÊ 01</div>
+          <div class="gp-num" id="g1-num">—</div>
+          <div class="gp-status" id="g1-status">Aguardando ação</div>
+          <div class="gp-actions">
+            <button class="btn-g primary g1c" onclick="chamarProximo(1)" id="btn-g1">⏭ PRÓXIMO</button>
+            <button class="btn-g" onclick="repetirGuiche(1)">🔁 Repetir</button>
+            <button class="btn-g" onclick="atendidoGuiche(1)">✅ Atendido</button>
+          </div>
+        </div>
+
+        <!-- Guichê 2 -->
+        <div class="guiche-painel g2">
+          <div class="gp-title">Chamando</div>
+          <div style="font-size:13px;font-weight:900;letter-spacing:3px;opacity:.9">GUICHÊ 02</div>
+          <div class="gp-num" id="g2-num">—</div>
+          <div class="gp-status" id="g2-status">Aguardando ação</div>
+          <div class="gp-actions">
+            <button class="btn-g primary g2c" onclick="chamarProximo(2)" id="btn-g2">⏭ PRÓXIMO</button>
+            <button class="btn-g" onclick="repetirGuiche(2)">🔁 Repetir</button>
+            <button class="btn-g" onclick="atendidoGuiche(2)">✅ Atendido</button>
+          </div>
+        </div>
+
+        <!-- Guichê 3 -->
+        <div class="guiche-painel g3">
+          <div class="gp-title">Chamando</div>
+          <div style="font-size:13px;font-weight:900;letter-spacing:3px;opacity:.9">GUICHÊ 03</div>
+          <div class="gp-num" id="g3-num">—</div>
+          <div class="gp-status" id="g3-status">Aguardando ação</div>
+          <div class="gp-actions">
+            <button class="btn-g primary g3c" onclick="chamarProximo(3)" id="btn-g3">⏭ PRÓXIMO</button>
+            <button class="btn-g" onclick="repetirGuiche(3)">🔁 Repetir</button>
+            <button class="btn-g" onclick="atendidoGuiche(3)">✅ Atendido</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila geral -->
+      <div class="section-head" style="font-size:17px">Fila de Espera</div>
+      <div class="fila-tabs">
+        <button class="ftab active" onclick="filtrarFila('todos',this)">Todos</button>
+        <button class="ftab" onclick="filtrarFila('aguardando',this)">Aguardando</button>
+        <button class="ftab" onclick="filtrarFila('chamado',this)">Chamados</button>
+        <button class="ftab" onclick="filtrarFila('atendido',this)">Atendidos</button>
+      </div>
+      <div class="fila-scroll" id="fila-list">
+        <div class="empty">Nenhuma senha gerada ainda.</div>
+      </div>
+    </div>
+
+    <div class="portaria-side">
+      <div class="section-head" style="font-size:17px;margin-bottom:12px">Estatísticas</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-n" id="st-total">0</div><div class="stat-l">Total</div></div>
+        <div class="stat-card sw"><div class="stat-n" id="st-espera">0</div><div class="stat-l">Aguardando</div></div>
+        <div class="stat-card sg"><div class="stat-n" id="st-atend">0</div><div class="stat-l">Atendidos</div></div>
+        <div class="stat-card sd"><div class="stat-n" id="st-cham">0</div><div class="stat-l">Em atend.</div></div>
+      </div>
+
+      <button class="btn-tv" onclick="abrirTV()">📺 Abrir Painel TV</button>
+      <button class="btn-danger" onclick="resetarFila()">🗑️ Zerar toda a fila</button>
+
+      <div class="qr-side">
+        <h4>QR Code — Entrada</h4>
+        <div id="qrcode-portaria"></div>
+        <div class="url-box" id="url-box">Carregando...</div>
+      </div>
+
+      <div style="font-size:11px;color:var(--gray);text-align:center;line-height:1.7">
+        Cada guichê chama senhas<br>independentemente da fila única.<br>
+        <strong style="color:var(--text)">Som ativado automaticamente</strong> ao chamar.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     PAINEL TV
+================================================================ -->
+<div id="page-tv" class="page">
+  <button class="tv-close-btn" onclick="fecharTV()">✕ Fechar</button>
+  <div class="flash-overlay" id="flash-overlay"></div>
+
+  <div class="tv-header">
+    <svg style="height:50px" viewBox="0 0 300 56" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="22" cy="30" r="18" fill="none" stroke="#00a99d" stroke-width="7"/>
+      <circle cx="38" cy="30" r="18" fill="none" stroke="#9b9b9b" stroke-width="7"/>
+      <text x="66" y="18" font-family="Montserrat,sans-serif" font-size="10" font-weight="600" fill="#9b9b9b" letter-spacing="3">HOSPITAL</text>
+      <text x="64" y="46" font-family="Montserrat,sans-serif" font-size="24" font-weight="900" fill="#00a99d" letter-spacing="1">VILA DA SERRA</text>
+    </svg>
+    <div style="text-align:center">
+      <div style="font-size:12px;color:var(--gray);font-weight:700;letter-spacing:4px;text-transform:uppercase">Sistema de Atendimento por Senha</div>
+    </div>
+    <div class="tv-relogio" id="tv-relogio">00:00:00</div>
+  </div>
+
+  <div class="tv-body">
+    <!-- Guichê 1 TV -->
+    <div class="tv-guiche g1">
+      <div class="tvg-label">Chamando senha</div>
+      <div class="tvg-guiche-name">GUICHÊ 01</div>
+      <div class="tvg-num" id="tv-g1">—</div>
+      <div class="tvg-status" id="tv-g1-status">Aguardando...</div>
+    </div>
+
+    <!-- Guichê 2 TV -->
+    <div class="tv-guiche g2">
+      <div class="tvg-label">Chamando senha</div>
+      <div class="tvg-guiche-name">GUICHÊ 02</div>
+      <div class="tvg-num" id="tv-g2">—</div>
+      <div class="tvg-status" id="tv-g2-status">Aguardando...</div>
+    </div>
+
+    <!-- Guichê 3 TV -->
+    <div class="tv-guiche g3">
+      <div class="tvg-label">Chamando senha</div>
+      <div class="tvg-guiche-name">GUICHÊ 03</div>
+      <div class="tvg-num" id="tv-g3">—</div>
+      <div class="tvg-status" id="tv-g3-status">Aguardando...</div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="tv-bottom">
+      <div class="tv-stat-item">
+        <div class="tv-stat-n" id="tv-aguardando">0</div>
+        <div class="tv-stat-l">Aguardando</div>
+      </div>
+      <div class="tv-stat-div"></div>
+      <div class="tv-stat-item">
+        <div class="tv-stat-n" id="tv-atendidos">0</div>
+        <div class="tv-stat-l">Atendidos hoje</div>
+      </div>
+      <div class="tv-stat-div"></div>
+      <div class="tv-stat-item">
+        <div class="tv-stat-n" id="tv-total-tv">0</div>
+        <div class="tv-stat-l">Total senhas</div>
+      </div>
+      <div class="tv-stat-div"></div>
+      <div class="tv-ticker-wrap">
+        <span class="tv-ticker">🏥 Bem-vindo ao Hospital Vila da Serra &nbsp;·&nbsp; Dirija-se ao guichê indicado quando sua senha for chamada &nbsp;·&nbsp; Por favor aguarde em local confortável &nbsp;·&nbsp; Obrigado pela preferência ❤️ &nbsp;·&nbsp; Hospital Vila da Serra — Cuidando de você com excelência</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tv-footer">HOSPITAL VILA DA SERRA &nbsp;·&nbsp; SISTEMA DE ATENDIMENTO</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ================================================================
+// ÁUDIO — Sintetizado via Web Audio API (sem arquivos externos)
+// ================================================================
+let audioCtx = null;
+
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function tocarAlerta() {
+  try {
+    const ctx = getAudio();
+    // Sequência: 3 bipes curtos + 1 longo
+    const notas = [880, 880, 880, 660];
+    const duracoes = [0.12, 0.12, 0.12, 0.35];
+    const pausas  = [0.18, 0.18, 0.18, 0];
+    let t = ctx.currentTime + 0.05;
+
+    notas.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.4, t + 0.02);
+      gain.gain.setValueAtTime(0.4, t + duracoes[i] - 0.02);
+      gain.gain.linearRampToValueAtTime(0, t + duracoes[i]);
+      osc.start(t);
+      osc.stop(t + duracoes[i]);
+      t += duracoes[i] + pausas[i];
+    });
+
+    // Segundo bip mais grave para anuncio
+    setTimeout(() => {
+      try {
+        const ctx2 = getAudio();
+        const osc2 = ctx2.createOscillator();
+        const g2 = ctx2.createGain();
+        osc2.connect(g2); g2.connect(ctx2.destination);
+        osc2.frequency.value = 440;
+        osc2.type = 'sine';
+        g2.gain.setValueAtTime(0, ctx2.currentTime);
+        g2.gain.linearRampToValueAtTime(0.3, ctx2.currentTime + 0.05);
+        g2.gain.setValueAtTime(0.3, ctx2.currentTime + 0.4);
+        g2.gain.linearRampToValueAtTime(0, ctx2.currentTime + 0.5);
+        osc2.start(ctx2.currentTime);
+        osc2.stop(ctx2.currentTime + 0.5);
+      } catch(e) {}
+    }, 900);
+
+  } catch(e) { console.warn('Audio não disponível:', e); }
+}
+
+function tocarSomVoz(senha, guiche) {
+  // Tenta usar SpeechSynthesis para anunciar por voz
+  try {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const texto = `Senha ${senha.split('').join(' ')}, dirija-se ao guichê ${guiche}`;
+      const utter = new SpeechSynthesisUtterance(texto);
+      utter.lang = 'pt-BR';
+      utter.rate = 0.85;
+      utter.pitch = 1;
+      utter.volume = 1;
+      // aguardar bipes terminarem
+      setTimeout(() => window.speechSynthesis.speak(utter), 1100);
+    }
+  } catch(e) {}
+}
+
+// ================================================================
+// ESTADO
+// ================================================================
+let state = {
+  fila: [],
+  contador: 0,
+  guiches: { 1: null, 2: null, 3: null }, // senha atual de cada guichê
+  minhaSenha: null,
+};
+let filtroAtual = 'todos';
+const KEY = 'vds_fila_v3';
+let ultimoHash = '';
+
+function salvar() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {}
+}
+function carregar() {
+  try {
+    const s = localStorage.getItem(KEY);
+    if (s) {
+      const parsed = JSON.parse(s);
+      state = { ...state, ...parsed };
+    }
+  } catch(e) {}
+}
+
+// Poll a cada 1.5s para responsividade
+setInterval(() => {
+  const novoHash = localStorage.getItem(KEY) || '';
+  if (novoHash !== ultimoHash) {
+    ultimoHash = novoHash;
+    carregar();
+    renderAll();
+  }
+}, 1500);
+
+// ================================================================
+// PAGES
+// ================================================================
+function setPage(p, btn) {
+  document.querySelectorAll('.page:not(#page-tv)').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function abrirTV() {
+  const tv = document.getElementById('page-tv');
+  tv.style.display = 'flex';
+  tv.classList.add('active');
+  document.getElementById('main-nav').style.display = 'none';
+  renderAll();
+  try { document.documentElement.requestFullscreen(); } catch(e) {}
+}
+function fecharTV() {
+  document.getElementById('page-tv').style.display = 'none';
+  document.getElementById('page-tv').classList.remove('active');
+  document.getElementById('main-nav').style.display = 'flex';
+  try { document.exitFullscreen(); } catch(e) {}
+}
+
+// ================================================================
+// QR CODE
+// ================================================================
+function initQR() {
+  const url = window.location.href.split('?')[0];
+  document.getElementById('url-box').textContent = url;
+  const opts = { text: url, width: 150, height: 150, colorDark: '#007f75', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M };
+  ['qrcode-cliente','qrcode-portaria'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.hasChildNodes()) new QRCode(el, opts);
+  });
+}
+
+// ================================================================
+// RELÓGIO
+// ================================================================
+function tickRelogio() {
+  const el = document.getElementById('tv-relogio');
+  if (el) el.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+setInterval(tickRelogio, 1000);
+tickRelogio();
+
+// ================================================================
+// CLIENTE: GERAR SENHA
+// ================================================================
+function gerarSenha() {
+  // Desbloqueia AudioContext em resposta a gesto do usuário
+  try { getAudio(); } catch(e) {}
+
+  carregar();
+  state.contador = (state.contador || 0) + 1;
+  const num = state.contador;
+  const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  state.fila.push({ id: Date.now(), numero: num, hora, status: 'aguardando', guiche: null });
+  state.minhaSenha = num;
+  salvar();
+  ultimoHash = localStorage.getItem(KEY) || '';
+
+  document.getElementById('btn-pegar').disabled = true;
+  document.getElementById('btn-pegar').textContent = '✅ Senha retirada!';
+  document.getElementById('ms-num').textContent = fmt(num);
+  document.getElementById('ms-hora').textContent = 'Emitida às ' + hora;
+  document.getElementById('minha-senha-card').classList.add('show');
+  renderAll();
+  showToast('Senha ' + fmt(num) + ' gerada com sucesso!');
+}
+
+function atualizarPosicaoCliente() {
+  if (!state.minhaSenha) return;
+  const el = document.getElementById('ms-posicao');
+  if (!el) return;
+  const item = (state.fila || []).find(f => f.numero === state.minhaSenha);
+  if (!item) return;
+
+  if (item.status === 'atendido') {
+    el.className = 'posicao-tag'; el.textContent = '✅ Você foi atendido!'; return;
+  }
+  if (item.status === 'chamado') {
+    el.className = 'posicao-tag alert';
+    el.textContent = '🔔 SUA VEZ! Guichê ' + fmt2(item.guiche || '?'); return;
+  }
+  const naFrente = (state.fila || []).filter(f => f.status === 'aguardando' && f.numero < state.minhaSenha).length;
+  el.className = 'posicao-tag';
+  el.textContent = naFrente === 0 ? '🟢 Você é o próximo!' : naFrente + ' pessoa(s) na sua frente';
+}
+
+// ================================================================
+// PORTARIA: AÇÕES POR GUICHÊ
+// ================================================================
+function chamarProximo(g) {
+  // Desbloqueia áudio em gesto
+  try { getAudio(); } catch(e) {}
+
+  carregar();
+  const prox = (state.fila || []).find(f => f.status === 'aguardando');
+  if (!prox) { showToast('Sem senhas aguardando!'); return; }
+
+  // Marca anterior deste guichê como atendido
+  const guiches = state.guiches || { 1: null, 2: null, 3: null };
+  const numAnterior = guiches[g];
+  if (numAnterior) {
+    const ant = state.fila.find(f => f.numero === numAnterior && f.status === 'chamado');
+    if (ant) ant.status = 'atendido';
+  }
+
+  prox.status = 'chamado';
+  prox.guiche = g;
+  guiches[g] = prox.numero;
+  state.guiches = guiches;
+  salvar();
+  ultimoHash = localStorage.getItem(KEY) || '';
+
+  renderAll();
+  tocarAlerta();
+  tocarSomVoz(fmt(prox.numero), fmt2(g));
+  triggerFlash();
+  showToast('Guichê ' + fmt2(g) + ' chamou senha ' + fmt(prox.numero));
+}
+
+function repetirGuiche(g) {
+  const guiches = state.guiches || {};
+  const num = guiches[g];
+  if (!num) { showToast('Guichê ' + fmt2(g) + ' não chamou nenhuma senha!'); return; }
+  const el = document.getElementById('g' + g + '-num');
+  if (el) { el.classList.remove('anim'); void el.offsetWidth; el.classList.add('anim'); }
+  tocarAlerta();
+  tocarSomVoz(fmt(num), fmt2(g));
+  triggerFlash();
+  showToast('Repetindo: Senha ' + fmt(num) + ' — Guichê ' + fmt2(g));
+}
+
+function atendidoGuiche(g) {
+  carregar();
+  const guiches = state.guiches || {};
+  const num = guiches[g];
+  if (!num) { showToast('Nenhuma senha chamada no Guichê ' + fmt2(g)); return; }
+  const item = state.fila.find(f => f.numero === num);
+  if (item) item.status = 'atendido';
+  guiches[g] = null;
+  state.guiches = guiches;
+  salvar();
+  ultimoHash = localStorage.getItem(KEY) || '';
+  renderAll();
+  showToast('Guichê ' + fmt2(g) + ' — Senha ' + fmt(num) + ' atendida!');
+}
+
+function resetarFila() {
+  if (!confirm('Zerar toda a fila? Esta ação não pode ser desfeita.')) return;
+  state = { fila: [], contador: 0, guiches: { 1: null, 2: null, 3: null }, minhaSenha: null };
+  salvar();
+  ultimoHash = localStorage.getItem(KEY) || '';
+  const bp = document.getElementById('btn-pegar');
+  if (bp) { bp.disabled = false; bp.textContent = '🎫 RETIRAR SENHA'; }
+  const msc = document.getElementById('minha-senha-card');
+  if (msc) msc.classList.remove('show');
+  filtroAtual = 'todos';
+  renderAll();
+  showToast('Fila zerada!');
+}
+
+// ================================================================
+// FILTRO FILA
+// ================================================================
+function filtrarFila(f, btn) {
+  filtroAtual = f;
+  document.querySelectorAll('.ftab').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+// ================================================================
+// FLASH TV
+// ================================================================
+function triggerFlash() {
+  const el = document.getElementById('flash-overlay');
+  if (!el) return;
+  el.classList.remove('flash');
+  void el.offsetWidth;
+  el.classList.add('flash');
+}
+
+// ================================================================
+// RENDER
+// ================================================================
+function fmt(n) { return String(n).padStart(3, '0'); }
+function fmt2(n) { return String(n).padStart(2, '0'); }
+
+function renderAll() {
+  const fila = state.fila || [];
+  const guiches = state.guiches || { 1: null, 2: null, 3: null };
+
+  const total = fila.length;
+  const espera = fila.filter(f => f.status === 'aguardando').length;
+  const atend = fila.filter(f => f.status === 'atendido').length;
+  const cham = fila.filter(f => f.status === 'chamado').length;
+
+  // ---- CLIENTE ----
+  [1,2,3].forEach(g => {
+    const num = guiches[g];
+    setTxt('pub-g' + g, num ? fmt(num) : '—');
+  });
+  if (state.minhaSenha) setTxt('ms-num', fmt(state.minhaSenha));
+  atualizarPosicaoCliente();
+
+  // ---- PORTARIA: guichês ----
+  [1,2,3].forEach(g => {
+    const num = guiches[g];
+    const el = document.getElementById('g' + g + '-num');
+    if (el) {
+      const antes = el.textContent;
+      el.textContent = num ? fmt(num) : '—';
+      if (antes !== el.textContent && num) { el.classList.remove('anim'); void el.offsetWidth; el.classList.add('anim'); }
+    }
+    const st = document.getElementById('g' + g + '-status');
+    if (st) st.textContent = num ? 'Chamando senha ' + fmt(num) : 'Aguardando ação';
+
+    const btn = document.getElementById('btn-g' + g);
+    if (btn) btn.disabled = espera === 0;
+  });
+
+  // stats
+  setTxt('st-total', total);
+  setTxt('st-espera', espera);
+  setTxt('st-atend', atend);
+  setTxt('st-cham', cham);
+
+  // fila list
+  const fl = document.getElementById('fila-list');
+  if (fl) {
+    let filtrada = [...fila].reverse();
+    if (filtroAtual !== 'todos') filtrada = filtrada.filter(f => f.status === filtroAtual);
+    if (filtrada.length === 0) {
+      fl.innerHTML = '<div class="empty">Nenhuma senha neste filtro.</div>';
+    } else {
+      fl.innerHTML = filtrada.map(f => {
+        const cls = f.status === 'chamado' ? 'fila-item chamado' : f.status === 'atendido' ? 'fila-item atendido' : 'fila-item';
+        const badge = f.status === 'aguardando' ? '<span class="fi-badge badge-ag">Aguardando</span>'
+          : f.status === 'chamado' ? '<span class="fi-badge badge-ch">📢 Chamado</span>'
+          : '<span class="fi-badge badge-at">✅ Atendido</span>';
+        const gcls = f.guiche ? 'fi-guiche g' + f.guiche + 'c' : 'fi-guiche';
+        const ginfo = f.guiche ? '<div class="' + gcls + '">Guichê ' + fmt2(f.guiche) + '</div>' : '';
+        return `<div class="${cls}">
+          <div class="fi-num">${fmt(f.numero)}</div>
+          <div class="fi-info"><div class="fi-hora">⏰ ${f.hora}</div>${ginfo}</div>
+          ${badge}
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ---- TV ----
+  [1,2,3].forEach(g => {
+    const num = guiches[g];
+    const tvEl = document.getElementById('tv-g' + g);
+    if (tvEl) {
+      const antes = tvEl.textContent;
+      tvEl.textContent = num ? fmt(num) : '—';
+      if (antes !== tvEl.textContent && num) { tvEl.classList.remove('novo'); void tvEl.offsetWidth; tvEl.classList.add('novo'); }
+    }
+    const tvSt = document.getElementById('tv-g' + g + '-status');
+    if (tvSt) tvSt.textContent = num ? 'Dirija-se ao Guichê ' + fmt2(g) : 'Aguardando próxima senha...';
+  });
+
+  setTxt('tv-aguardando', espera);
+  setTxt('tv-atendidos', atend);
+  setTxt('tv-total-tv', total);
+}
+
+function setTxt(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ================================================================
+// INIT
+// ================================================================
+carregar();
+ultimoHash = localStorage.getItem(KEY) || '';
+initQR();
+renderAll();
+</script>
+</body>
+</html>
