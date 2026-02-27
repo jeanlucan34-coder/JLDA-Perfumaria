@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hospital Vila da Serra — Retire sua Senha</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #00a99d;
+  --teal-dark: #007f75;
+  --teal-light: #e6f7f6;
+  --gray: #9b9b9b;
+  --gray-light: #f5f5f5;
+  --white: #ffffff;
+  --border: #dce9e8;
+  --warning: #e8a000;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: var(--gray-light);
+  min-height: 100vh;
+}
+.header {
+  background: white;
+  border-bottom: 4px solid var(--teal);
+  padding: 16px 24px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0,169,157,.1);
+}
+.wrap {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.painel-title {
+  font-size: 11px; font-weight: 700; color: var(--gray);
+  text-transform: uppercase; letter-spacing: 3px;
+  text-align: center;
+}
+.painel-guiches {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 10px;
+}
+.gc {
+  border-radius: 14px; padding: 16px 8px;
+  text-align: center; color: white;
+  box-shadow: 0 4px 14px rgba(0,0,0,.15);
+}
+.gc.g1 { background: linear-gradient(135deg,#00a99d,#007f75); }
+.gc.g2 { background: linear-gradient(135deg,#f0b429,#c77800); }
+.gc.g3 { background: linear-gradient(135deg,#7c52d6,#4a2d9e); }
+.gc-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: .85; }
+.gc-name  { font-size: 11px; font-weight: 900; opacity: .9; margin: 2px 0; }
+.gc-num   { font-family: 'Oswald',sans-serif; font-size: 46px; font-weight: 700; letter-spacing: 3px; line-height: 1; margin: 4px 0; }
+.gc-sub   { font-size: 9px; opacity: .8; }
+
+.qr-box {
+  background: white; border-radius: 18px;
+  padding: 22px; border: 2px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0,169,157,.1);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  width: 100%;
+}
+.qr-box .qt { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 2px; }
+
+.btn-pegar {
+  width: 100%; padding: 20px;
+  background: var(--teal); color: white; border: none;
+  border-radius: 14px; font-family: 'Oswald',sans-serif;
+  font-size: 24px; font-weight: 500; letter-spacing: 3px;
+  cursor: pointer; transition: all .2s;
+  box-shadow: 0 6px 24px rgba(0,169,157,.35);
+}
+.btn-pegar:hover { background: var(--teal-dark); transform: translateY(-2px); }
+.btn-pegar:disabled { background: var(--gray); cursor: not-allowed; transform: none; box-shadow: none; }
+
+.senha-card {
+  display: none; width: 100%;
+  background: white; border: 3px solid var(--teal);
+  border-radius: 18px; padding: 28px; text-align: center;
+  box-shadow: 0 8px 32px rgba(0,169,157,.2);
+  animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
+}
+.senha-card.show { display: block; }
+@keyframes popIn { from{transform:scale(.8);opacity:0} to{transform:scale(1);opacity:1} }
+.sc-label { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 3px; font-weight: 700; }
+.sc-num { font-family: 'Oswald',sans-serif; font-size: 88px; color: var(--teal); font-weight: 700; line-height: 1; letter-spacing: 6px; margin: 6px 0; }
+.sc-hora { font-size: 12px; color: var(--gray); margin-bottom: 14px; }
+.pos-tag {
+  display: inline-block; background: var(--teal-light);
+  color: var(--teal-dark); border: 1.5px solid var(--teal);
+  border-radius: 20px; padding: 8px 24px;
+  font-size: 14px; font-weight: 700;
+}
+.pos-tag.alert {
+  background: #fff3cd; color: #856404; border-color: var(--warning);
+  animation: blink 1s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+.loading { text-align: center; padding: 40px; color: var(--gray); font-size: 14px; }
+.erro { background: #ffeaea; border: 1px solid #f5c6cb; border-radius: 12px; padding: 16px; color: #721c24; font-size: 13px; text-align: center; width: 100%; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <svg style="height:44px;display:block;margin:0 auto" viewBox="0 0 300 56" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="22" cy="30" r="18" fill="none" stroke="#00a99d" stroke-width="7"/>
+    <circle cx="38" cy="30" r="18" fill="none" stroke="#9b9b9b" stroke-width="7"/>
+    <text x="66" y="18" font-family="Montserrat,sans-serif" font-size="10" font-weight="600" fill="#9b9b9b" letter-spacing="3">HOSPITAL</text>
+    <text x="64" y="46" font-family="Montserrat,sans-serif" font-size="24" font-weight="900" fill="#00a99d" letter-spacing="1">VILA DA SERRA</text>
+  </svg>
+</div>
+
+<div class="wrap">
+  <div id="loading" class="loading">⏳ Conectando...</div>
+  <div id="conteudo" style="display:none;width:100%;display:none;flex-direction:column;align-items:center;gap:20px">
+
+    <div class="painel-title">Chamando agora</div>
+    <div class="painel-guiches">
+      <div class="gc g1">
+        <div class="gc-label">Chamando</div>
+        <div class="gc-name">GUICHÊ 01</div>
+        <div class="gc-num" id="g1">—</div>
+        <div class="gc-sub">Atendimento</div>
+      </div>
+      <div class="gc g2">
+        <div class="gc-label">Chamando</div>
+        <div class="gc-name">GUICHÊ 02</div>
+        <div class="gc-num" id="g2">—</div>
+        <div class="gc-sub">Atendimento</div>
+      </div>
+      <div class="gc g3">
+        <div class="gc-label">Chamando</div>
+        <div class="gc-name">GUICHÊ 03</div>
+        <div class="gc-num" id="g3">—</div>
+        <div class="gc-sub">Atendimento</div>
+      </div>
+    </div>
+
+    <div class="qr-box">
+      <div class="qt">Escaneie para retirar sua senha</div>
+      <div id="qrcode"></div>
+      <div style="font-size:12px;color:var(--gray)">Ou clique no botão abaixo</div>
+    </div>
+
+    <button class="btn-pegar" id="btn-pegar" onclick="gerarSenha()">🎫 RETIRAR SENHA</button>
+
+    <div class="senha-card" id="senha-card">
+      <div class="sc-label">Sua senha</div>
+      <div class="sc-num" id="sc-num">000</div>
+      <div class="sc-hora" id="sc-hora"></div>
+      <div class="pos-tag" id="sc-pos">Verificando posição...</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCY0DDSTeFkjaEwL6LE6iLt0JdKHwExVgs",
+  authDomain: "fila-viladaserra.firebaseapp.com",
+  databaseURL: "https://fila-viladaserra-default-rtdb.firebaseio.com",
+  projectId: "fila-viladaserra",
+  storageBucket: "fila-viladaserra.firebasestorage.app",
+  messagingSenderId: "1064151600235",
+  appId: "1:1064151600235:web:8ffd2ac2868a9943a6b52e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let minhaSenha = sessionStorage.getItem('minha_senha') ? parseInt(sessionStorage.getItem('minha_senha')) : null;
+let dadosAtuais = { fila: {}, guiches: { g1: null, g2: null, g3: null }, contador: 0 };
+
+// Mostra conteúdo
+document.getElementById('loading').style.display = 'none';
+const cont = document.getElementById('conteudo');
+cont.style.display = 'flex';
+
+// QR Code
+setTimeout(() => {
+  const url = window.location.href.split('?')[0];
+  const el = document.getElementById('qrcode');
+  if (el && window.QRCode) {
+    new QRCode(el, { text: url, width: 160, height: 160, colorDark: '#007f75', colorLight: '#fff' });
+  }
+}, 500);
+
+// Restaura senha da sessão
+if (minhaSenha) {
+  document.getElementById('btn-pegar').disabled = true;
+  document.getElementById('btn-pegar').textContent = '✅ Senha já retirada!';
+  document.getElementById('sc-num').textContent = fmt(minhaSenha);
+  document.getElementById('senha-card').classList.add('show');
+}
+
+// Listener tempo real
+onValue(ref(db, '/'), (snap) => {
+  dadosAtuais = snap.val() || { fila: {}, guiches: { g1: null, g2: null, g3: null }, contador: 0 };
+  renderCliente();
+});
+
+function renderCliente() {
+  const guiches = dadosAtuais.guiches || {};
+  [1,2,3].forEach(g => {
+    const el = document.getElementById('g' + g);
+    if (el) el.textContent = guiches['g'+g] ? fmt(guiches['g'+g]) : '—';
+  });
+  atualizarPosicao();
+}
+
+function atualizarPosicao() {
+  if (!minhaSenha) return;
+  const el = document.getElementById('sc-pos');
+  const fila = dadosAtuais.fila || {};
+  const guiches = dadosAtuais.guiches || {};
+
+  // Verifica se foi chamado por algum guichê
+  const guicheChamou = Object.keys(guiches).find(g => guiches[g] === minhaSenha);
+
+  // Verifica se foi atendido
+  const meuItem = Object.values(fila).find(f => f.numero === minhaSenha);
+
+  if (!meuItem) return;
+  if (meuItem.status === 'atendido') {
+    el.className = 'pos-tag'; el.textContent = '✅ Você foi atendido!'; return;
+  }
+  if (guicheChamou) {
+    const gNum = guicheChamou.replace('g','');
+    el.className = 'pos-tag alert';
+    el.textContent = '🔔 SUA VEZ! Dirija-se ao Guichê 0' + gNum + '!'; return;
+  }
+  const naFrente = Object.values(fila).filter(f => f.status === 'aguardando' && f.numero < minhaSenha).length;
+  el.className = 'pos-tag';
+  el.textContent = naFrente === 0 ? '🟢 Você é o próximo!' : naFrente + ' pessoa(s) na sua frente';
+}
+
+window.gerarSenha = async function() {
+  const btn = document.getElementById('btn-pegar');
+  btn.disabled = true;
+  btn.textContent = '⏳ Gerando...';
+
+  try {
+    // Incrementa contador atomicamente
+    const contRef = ref(db, '/contador');
+    const snap = await get(contRef);
+    const novoNum = (snap.val() || 0) + 1;
+    await set(contRef, novoNum);
+
+    const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    await push(ref(db, '/fila'), {
+      numero: novoNum,
+      hora,
+      status: 'aguardando',
+      guiche: null,
+      timestamp: Date.now()
+    });
+
+    minhaSenha = novoNum;
+    sessionStorage.setItem('minha_senha', novoNum);
+
+    document.getElementById('sc-num').textContent = fmt(novoNum);
+    document.getElementById('sc-hora').textContent = 'Emitida às ' + hora;
+    document.getElementById('senha-card').classList.add('show');
+    btn.textContent = '✅ Senha retirada!';
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '🎫 RETIRAR SENHA';
+    alert('Erro ao gerar senha. Verifique a conexão.');
+  }
+}
+
+function fmt(n) { return String(n).padStart(3,'0'); }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</body>
+</html>
