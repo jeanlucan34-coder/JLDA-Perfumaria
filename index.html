@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#00a99d">
+<title>Hospital Vila da Serra — Retire sua Senha</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #00a99d; --teal-dark: #007f75; --teal-light: #e6f7f6;
+  --gray: #9b9b9b; --gray-light: #f5f5f5; --white: #fff;
+  --border: #dce9e8; --warning: #e8a000;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: linear-gradient(160deg, #e6f7f6 0%, #f5f5f5 100%);
+  min-height: 100vh; display: flex; flex-direction: column;
+}
+.header {
+  background: white; border-bottom: 4px solid var(--teal);
+  padding: 18px 24px; text-align: center;
+  box-shadow: 0 2px 16px rgba(0,169,157,.12);
+}
+.centro {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 24px; gap: 24px;
+}
+.bv-box { text-align: center; }
+.bv-box h1 { font-size: 22px; font-weight: 900; color: var(--teal-dark); letter-spacing: 1px; margin-bottom: 6px; }
+.bv-box p  { font-size: 14px; color: var(--gray); }
+
+/* Botão pegar */
+.btn-pegar {
+  width: 100%; max-width: 400px; padding: 24px;
+  background: var(--teal); color: white; border: none;
+  border-radius: 18px; font-family: 'Oswald', sans-serif;
+  font-size: 28px; font-weight: 500; letter-spacing: 3px;
+  cursor: pointer; transition: all .2s;
+  box-shadow: 0 8px 32px rgba(0,169,157,.4);
+}
+.btn-pegar:hover  { background: var(--teal-dark); transform: translateY(-3px); }
+.btn-pegar:active { transform: translateY(0); }
+.btn-pegar:disabled { background: var(--gray); cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Aviso notificação */
+.aviso-notif {
+  display: none; width: 100%; max-width: 400px;
+  background: #fffbea; border: 1.5px solid #f0c040;
+  border-radius: 14px; padding: 16px 18px;
+  flex-direction: row; gap: 12px; align-items: flex-start;
+}
+.aviso-notif.show { display: flex; }
+.an-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+.an-title { font-size: 13px; font-weight: 700; color: #7a5800; margin-bottom: 6px; }
+.an-body  { font-size: 12px; color: #7a5800; line-height: 1.7; }
+
+/* Aviso negado */
+.aviso-negado {
+  display: none; width: 100%; max-width: 400px;
+  background: #fff0f0; border: 1.5px solid #f5c6cb;
+  border-radius: 14px; padding: 14px 18px;
+  flex-direction: row; gap: 12px; align-items: flex-start;
+}
+.aviso-negado.show { display: flex; }
+
+/* Card senha */
+.senha-card {
+  display: none; width: 100%; max-width: 400px;
+  background: white; border: 3px solid var(--teal);
+  border-radius: 24px; padding: 36px 28px; text-align: center;
+  box-shadow: 0 12px 48px rgba(0,169,157,.2);
+  animation: popIn .5s cubic-bezier(.34,1.56,.64,1);
+  flex-direction: column; align-items: center; gap: 12px;
+}
+.senha-card.show { display: flex; }
+@keyframes popIn { from{transform:scale(.75);opacity:0} to{transform:scale(1);opacity:1} }
+.sc-label   { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 4px; }
+.sc-num     { font-family: 'Oswald', sans-serif; font-size: 108px; color: var(--teal); font-weight: 700; line-height: 1; letter-spacing: 8px; }
+.sc-divider { width: 60px; height: 3px; background: linear-gradient(90deg, var(--teal), var(--teal-light)); border-radius: 2px; }
+.sc-hora    { font-size: 13px; color: var(--gray); font-weight: 500; }
+.pos-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--teal-light); color: var(--teal-dark);
+  border: 1.5px solid var(--teal); border-radius: 30px;
+  padding: 10px 28px; font-size: 15px; font-weight: 700; margin-top: 4px;
+}
+.pos-tag.alert {
+  background: #fff3cd; color: #856404; border-color: var(--warning);
+  animation: blink 1s infinite; font-size: 14px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.55} }
+.sc-dica { font-size: 12px; color: var(--gray); text-align: center; max-width: 280px; line-height: 1.6; }
+
+/* Loading */
+.loading-dot {
+  width: 48px; height: 48px; border: 4px solid var(--teal-light);
+  border-top-color: var(--teal); border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+
+.footer { text-align: center; padding: 16px; font-size: 11px; color: var(--gray); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <svg style="height:42px;display:block;margin:0 auto" viewBox="0 0 300 56" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="22" cy="30" r="18" fill="none" stroke="#00a99d" stroke-width="7"/>
+    <circle cx="38" cy="30" r="18" fill="none" stroke="#9b9b9b" stroke-width="7"/>
+    <text x="66" y="18" font-family="Montserrat,sans-serif" font-size="10" font-weight="600" fill="#9b9b9b" letter-spacing="3">HOSPITAL</text>
+    <text x="64" y="46" font-family="Montserrat,sans-serif" font-size="24" font-weight="900" fill="#00a99d" letter-spacing="1">VILA DA SERRA</text>
+  </svg>
+</div>
+
+<div class="centro">
+
+  <div id="loading" style="display:flex;flex-direction:column;align-items:center;gap:16px">
+    <div class="loading-dot"></div>
+    <span style="font-size:13px;color:var(--gray);font-weight:600">Conectando...</span>
+  </div>
+
+  <div id="conteudo" style="display:none;flex-direction:column;align-items:center;gap:24px;width:100%">
+
+    <div class="bv-box">
+      <h1>Bem-vindo!</h1>
+      <p>Clique no botão abaixo para retirar sua senha de atendimento.</p>
+    </div>
+
+    <button class="btn-pegar" id="btn-pegar" onclick="gerarSenha()">
+      🎫 RETIRAR SENHA
+    </button>
+
+    <!-- Aviso: ative notificações -->
+    <div class="aviso-notif" id="aviso-notif">
+      <div class="an-icon">🔔</div>
+      <div>
+        <div class="an-title">Notificações ativadas!</div>
+        <div class="an-body">
+          Você receberá um alerta <strong>igual ao WhatsApp</strong> quando sua senha for chamada, mesmo com a tela bloqueada.<br><br>
+          📳 <strong>Pode guardar o celular</strong> com segurança!
+        </div>
+      </div>
+    </div>
+
+    <!-- Aviso: notificação negada -->
+    <div class="aviso-negado" id="aviso-negado">
+      <div class="an-icon">⚠️</div>
+      <div>
+        <div class="an-title" style="color:#842029">Notificação bloqueada</div>
+        <div class="an-body" style="color:#842029">
+          Você bloqueou as notificações.<br>
+          <strong>Mantenha esta página aberta</strong> para receber o alerta quando sua senha for chamada.
+        </div>
+      </div>
+    </div>
+
+    <!-- Senha gerada -->
+    <div class="senha-card" id="senha-card">
+      <div class="sc-label">Sua senha de atendimento</div>
+      <div class="sc-num" id="sc-num">000</div>
+      <div class="sc-divider"></div>
+      <div class="sc-hora" id="sc-hora"></div>
+      <div class="pos-tag" id="sc-pos">⏳ Verificando posição...</div>
+      <div class="sc-dica">Aguarde seu número ser chamado. Você será notificado!</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">Hospital Vila da Serra &nbsp;·&nbsp; Sistema de Senhas</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCY0DDSTeFkjaEwL6LE6iLt0JdKHwExVgs",
+  authDomain: "fila-viladaserra.firebaseapp.com",
+  databaseURL: "https://fila-viladaserra-default-rtdb.firebaseio.com",
+  projectId: "fila-viladaserra",
+  storageBucket: "fila-viladaserra.firebasestorage.app",
+  messagingSenderId: "1064151600235",
+  appId: "1:1064151600235:web:8ffd2ac2868a9943a6b52e"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db       = firebase.database();
+const messaging = firebase.messaging();
+const functions = firebase.functions();
+
+const VAPID_KEY = 'BJIGmg4bzwA2FrO5gqALZlb3S_5ZKKE4HmNwTvMUl5oqWQIna89Hd1oda-5-kRnZf0YTjDYhtIKP_sF81Aq7xSI';
+
+let minhaSenha     = sessionStorage.getItem('minha_senha')      ? parseInt(sessionStorage.getItem('minha_senha')) : null;
+let minhaSenhaHora = sessionStorage.getItem('minha_senha_hora') || '';
+let fcmToken       = sessionStorage.getItem('fcm_token')        || null;
+let jaAlertado     = sessionStorage.getItem('ja_alertado') === '1';
+let dados          = {};
+let audioCtx       = null;
+
+// =============================================
+// SERVICE WORKER
+// =============================================
+async function registrarSW() {
+  if (!('serviceWorker' in navigator)) return null;
+  try {
+    const reg = await navigator.serviceWorker.register('/fila-viladaserra/firebase-messaging-sw.js');
+    console.log('SW registrado:', reg.scope);
+    return reg;
+  } catch(e) {
+    console.warn('Erro SW:', e);
+    return null;
+  }
+}
+
+// =============================================
+// FCM TOKEN — pede permissão e registra token
+// =============================================
+async function ativarNotificacoes() {
+  try {
+    const permission = await Notification.requestPermission();
+
+    if (permission === 'granted') {
+      const token = await messaging.getToken({ vapidKey: VAPID_KEY });
+      if (token) {
+        fcmToken = token;
+        sessionStorage.setItem('fcm_token', token);
+        // Salva token no Firebase vinculado à senha
+        if (minhaSenha) {
+          await db.ref('/tokens/' + minhaSenha).set({ token, ts: Date.now() });
+        }
+        document.getElementById('aviso-notif').classList.add('show');
+        document.getElementById('aviso-negado').classList.remove('show');
+        console.log('FCM Token:', token);
+      }
+    } else {
+      document.getElementById('aviso-negado').classList.add('show');
+      document.getElementById('aviso-notif').classList.remove('show');
+    }
+  } catch(e) {
+    console.warn('Erro FCM:', e);
+    document.getElementById('aviso-negado').classList.add('show');
+  }
+}
+
+// =============================================
+// NOTIFICAÇÃO QUANDO APP ESTÁ EM FOREGROUND
+// =============================================
+messaging.onMessage((payload) => {
+  console.log('Mensagem recebida foreground:', payload);
+  const { title, body } = payload.notification || {};
+  tocarAlerta();
+  vibrar();
+  // Mostra notificação manual no foreground
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(title || '🔔 Hospital Vila da Serra', {
+        body: body || 'Sua senha foi chamada!',
+        icon: '/icon-192.png',
+        vibrate: [300, 100, 300, 100, 600],
+        requireInteraction: true,
+        tag: 'senha-chamada'
+      });
+    });
+  }
+});
+
+// =============================================
+// ÁUDIO
+// =============================================
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function tocarAlerta() {
+  try {
+    const ctx = getAudio();
+    const notas = [[523,.15,.05],[659,.15,.05],[784,.25,.15],[784,.15,.05],[1047,.35,0]];
+    let t = ctx.currentTime + .05;
+    notas.forEach(([freq,dur,pausa]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(.5,t+.02);
+      g.gain.setValueAtTime(.5,t+dur-.03);
+      g.gain.linearRampToValueAtTime(0,t+dur);
+      o.start(t); o.stop(t+dur);
+      t += dur+pausa;
+    });
+    setTimeout(() => {
+      try {
+        const ctx2 = getAudio();
+        let t2 = ctx2.currentTime + .05;
+        notas.forEach(([freq,dur,pausa]) => {
+          const o=ctx2.createOscillator(),g=ctx2.createGain();
+          o.connect(g);g.connect(ctx2.destination);
+          o.type='sine';o.frequency.value=freq;
+          g.gain.setValueAtTime(0,t2);
+          g.gain.linearRampToValueAtTime(.4,t2+.02);
+          g.gain.setValueAtTime(.4,t2+dur-.03);
+          g.gain.linearRampToValueAtTime(0,t2+dur);
+          o.start(t2);o.stop(t2+dur);
+          t2+=dur+pausa;
+        });
+      } catch(e){}
+    }, 1600);
+  } catch(e){}
+}
+
+function vibrar() {
+  try {
+    if ('vibrate' in navigator) {
+      navigator.vibrate([300,100,300,100,600]);
+      setTimeout(() => navigator.vibrate([300,100,300,100,600]), 2000);
+    }
+  } catch(e){}
+}
+
+// =============================================
+// ALERTA COMPLETO (quando app está aberto)
+// =============================================
+function dispararAlertaLocal(senha, guiche) {
+  if (jaAlertado) return;
+  jaAlertado = true;
+  sessionStorage.setItem('ja_alertado','1');
+  tocarAlerta();
+  vibrar();
+  // Pisca tela
+  let f = 0;
+  const iv = setInterval(() => {
+    document.body.style.background = f%2===0 ? '#b2ede9' : 'linear-gradient(160deg,#e6f7f6,#f5f5f5)';
+    if(++f >= 6) { clearInterval(iv); document.body.style.background='linear-gradient(160deg,#e6f7f6,#f5f5f5)'; }
+  }, 250);
+}
+
+// =============================================
+// INIT
+// =============================================
+window.addEventListener('load', async () => {
+  await registrarSW();
+
+  setTimeout(() => {
+    document.getElementById('loading').style.display = 'none';
+    const c = document.getElementById('conteudo');
+    c.style.display = 'flex';
+    if (minhaSenha) {
+      document.getElementById('btn-pegar').disabled = true;
+      document.getElementById('btn-pegar').textContent = '✅ Senha já retirada!';
+      document.getElementById('sc-num').textContent = fmt(minhaSenha);
+      document.getElementById('sc-hora').textContent = 'Emitida às ' + minhaSenhaHora;
+      document.getElementById('senha-card').classList.add('show');
+      // Verifica permissão já concedida
+      if (Notification.permission === 'granted') {
+        document.getElementById('aviso-notif').classList.add('show');
+      } else if (Notification.permission === 'denied') {
+        document.getElementById('aviso-negado').classList.add('show');
+      }
+    }
+  }, 800);
+
+  // Desbloqueia áudio no primeiro toque
+  document.addEventListener('touchstart', () => { try{getAudio();}catch(e){} }, {once:true});
+  document.addEventListener('click',      () => { try{getAudio();}catch(e){} }, {once:true});
+
+  // Listener Realtime Database
+  db.ref('/').on('value', snap => {
+    dados = snap.val() || {};
+    atualizarPosicao();
+  });
+});
+
+// =============================================
+// POSIÇÃO NA FILA
+// =============================================
+function atualizarPosicao() {
+  if (!minhaSenha) return;
+  const el = document.getElementById('sc-pos');
+  if (!el) return;
+
+  const fila    = dados.fila    || {};
+  const guiches = dados.guiches || {};
+  const itens   = Object.values(fila);
+  const meuItem = itens.find(f => f.numero === minhaSenha);
+  if (!meuItem) return;
+
+  if (meuItem.status === 'atendido') {
+    el.className = 'pos-tag';
+    el.textContent = '✅ Você foi atendido!';
+    return;
+  }
+
+  const guicheChamou = Object.keys(guiches).find(g => guiches[g] === minhaSenha);
+  if (guicheChamou) {
+    const gNum = guicheChamou.replace('g','');
+    const nome = 'Guichê 0' + gNum;
+    el.className = 'pos-tag alert';
+    el.textContent = '🔔 SUA VEZ! Dirija-se ao ' + nome + '!';
+    dispararAlertaLocal(fmt(minhaSenha), nome);
+    return;
+  }
+
+  jaAlertado = false;
+  sessionStorage.removeItem('ja_alertado');
+
+  const naFrente = itens.filter(f => f.status==='aguardando' && f.numero < minhaSenha).length;
+  el.className = 'pos-tag';
+  el.textContent = naFrente === 0 ? '🟢 Você é o próximo!' : '👥 ' + naFrente + ' pessoa' + (naFrente>1?'s':'') + ' na sua frente';
+}
+
+// =============================================
+// GERAR SENHA
+// =============================================
+window.gerarSenha = async function() {
+  try { getAudio(); } catch(e) {}
+
+  const btn = document.getElementById('btn-pegar');
+  btn.disabled = true;
+  btn.textContent = '⏳ Gerando...';
+
+  try {
+    const snap    = await db.ref('/contador').get();
+    const novoNum = (snap.val() || 0) + 1;
+    await db.ref('/contador').set(novoNum);
+
+    const hora      = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const tsEmissao = Date.now();
+
+    await db.ref('/fila').push({
+      numero: novoNum, hora, tsEmissao,
+      status: 'aguardando', guiche: null,
+      tsChamada: null, tsFim: null
+    });
+
+    minhaSenha     = novoNum;
+    minhaSenhaHora = hora;
+    sessionStorage.setItem('minha_senha', novoNum);
+    sessionStorage.setItem('minha_senha_hora', hora);
+
+    document.getElementById('sc-num').textContent  = fmt(novoNum);
+    document.getElementById('sc-hora').textContent = 'Emitida às ' + hora;
+    document.getElementById('senha-card').classList.add('show');
+    btn.textContent = '✅ Senha retirada!';
+
+    // Pede permissão e registra token FCM
+    await ativarNotificacoes();
+
+    // Salva token com a senha
+    if (fcmToken) {
+      await db.ref('/tokens/' + novoNum).set({ token: fcmToken, ts: Date.now() });
+    }
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '🎫 RETIRAR SENHA';
+    alert('Erro ao gerar senha. Verifique a conexão.');
+  }
+};
+
+function fmt(n) { return String(n).padStart(3,'0'); }
+</script>
+</body>
+</html>
